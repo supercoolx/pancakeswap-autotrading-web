@@ -137,12 +137,14 @@ export const withdrawAll = async () => {
             return logs;
         }
         
-        const returnTokenPromises = wallets.map(async (wallet) => {
+        const returnTokenPromises = wallets.map(async (wallet, key) => {
             const tokenContract = new ethers.Contract(tokenAddress, tokenABI, wallet);
             const balance = await tokenContract.balanceOf(wallet.address);
 
             if (balance === BigInt(0)) {
-                log(logs, 'No tokens to return.');
+                ws[key].withdrawn = true;
+                await ws[key].save();
+                log(logs, `No tokens to return in ${wallet.address}`);
                 return logs;
             }
             const tx = await tokenContract.transfer(owner.address, balance);
