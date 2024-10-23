@@ -1,7 +1,7 @@
 import { useState, useEffect, FormEvent } from "react";
 import API from "../../utils/api";
 
-const Actions = ({ appendLog }: { appendLog: (...logs: string[]) => void }) => {
+const Actions = ({ appendLog, fetchWallets }: { appendLog: (...logs: string[]) => void, fetchWallets: () => void }) => {
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState(false);
     const [config, setConfig] = useState({
@@ -38,6 +38,7 @@ const Actions = ({ appendLog }: { appendLog: (...logs: string[]) => void }) => {
             appendLog(err.message);
         }).finally(() => {
             setLoading(false);
+            fetchWallets();
         });
     }
 
@@ -50,6 +51,7 @@ const Actions = ({ appendLog }: { appendLog: (...logs: string[]) => void }) => {
             appendLog(err.message);
         }).finally(() => {
             setLoading(false);
+            fetchWallets();
         })
     }
 

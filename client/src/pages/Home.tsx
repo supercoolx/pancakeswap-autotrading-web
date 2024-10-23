@@ -34,7 +34,7 @@ const Home = () => {
     <div className="px-5 mx-auto mt-5 containe">
       <Info />
       <div className="grid grid-cols-5 gap-5 mt-10">
-        <Actions appendLog={appendLog} />
+        <Actions appendLog={appendLog} fetchWallets={fetchWallets} />
         <div className="grid grid-cols-2 col-span-3 gap-2 border border-slate-500">
           <Wallets wallets={wallets} fetchWallets={fetchWallets} />
           <Transactions transactions={transactions} fetchTransactions={fetchTransactions} />
