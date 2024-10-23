@@ -24,7 +24,9 @@ const TradingView = () => {
 
   return (
     // <div id="tradingview_chart" style={{ height: '700px', marginTop: '40px' }} />
-    <iframe src="https://dexscreener.com/bsc/0x9a026404a460DA62f017f440e6f83A83C1368205" frameBorder="0" className="w-full h-[600px]"></iframe>
+    <div className="w-full relative pb-[650px]">
+      <iframe className="absolute inset-0 w-full h-full" src="https://dexscreener.com/bsc/0xe83997D3Ab561f2B6B65FdF83135B638404660bD?embed=1"></iframe>
+    </div>
   )
 }
 
