@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
 import API from "../../utils/api";
+import { IS_MAINNET } from "../../config/config";
 
 type InfoType = {
     ownerAddress?: string
@@ -20,7 +21,7 @@ const Info = () => {
     return (
         <div className="">
             <div className="flex gap-5">
-                <a href={`https://testnet.bscscan.com/address/${info.ownerAddress}`} target="_blank" className="cursor-pointer">Owner address: <span className="text-blue-500">{ info.ownerAddress }</span></a>
+                <a href={`https://${ IS_MAINNET ? '' : 'testnet.' }bscscan.com/address/${info.ownerAddress}`} target="_blank" className="cursor-pointer">Owner address: <span className="text-blue-500">{ info.ownerAddress }</span></a>
                 <div className="">Owner balance: { parseFloat(info.ownerBalance ?? '0').toFixed(5) } BNB</div>
             </div>
             <div className="flex gap-5">
