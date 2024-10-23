@@ -4,7 +4,7 @@ import NavBar from "./NavBar";
 import { useAuth } from "../providers/AuthProvider";
 
 const Header = () => {
-  const { isAuthenticatied } = useAuth();
+  const { isAuthenticatied, logout } = useAuth();
 
   return (
     <header className="bg-slate-200">
@@ -15,10 +15,11 @@ const Header = () => {
         <NavBar>
           <div className="space-x-3">
             <NavLink to={'/'}>Home</NavLink>
-            <NavLink to={'/about'}>About</NavLink>
+            <NavLink to={'/trading-view'}>TradingView</NavLink>
           </div>
-          { !isAuthenticatied && <div className='space-x-3'>
-            {/* <NavLink to={'/sign-up'}>Sign Up</NavLink> */}
+          { isAuthenticatied && <div className="cursor-pointer" onClick={logout}>Log out</div>}
+          { !isAuthenticatied && <div className="space-x-3">
+            <NavLink to={'/sign-up'}>Sign Up</NavLink>
             <NavLink to={'/sign-in'}>Sign In</NavLink>
           </div> }
         </NavBar>

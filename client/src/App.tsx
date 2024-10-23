@@ -2,7 +2,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import ProtectedRoute from './layout/ProtectedRoute';
 import AuthProvider from './providers/AuthProvider';
 import Home from './pages/Home';
-import About from './pages/About';
+import TradingView from './pages/TradingView';
 import Profile from './pages/Profile';
 import Signin from './pages/Signin';
 import Signup from './pages/Signup';
@@ -32,8 +32,8 @@ const router = createBrowserRouter([
             element: <Home />,
           },
           {
-            path: '/about',
-            element: <About />,
+            path: '/trading-view',
+            element: <TradingView />,
           },
           {
             path: '/profile',

@@ -17,7 +17,8 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
     const newUser = new User({ username, email, password: hashedPassword }); // ⭐⭐
     await newUser.save();
 
-    res.status(201).json({ message: "User signed up.", data: newUser });
+    const token = JWT.generate({ email: newUser.email });
+    res.cookie('access_token', token, { httpOnly: true }).status(201).json({ message: "User signed up.", data: newUser });
   } catch (error: any) {
     console.error(error);
     res.status(StatusCodes.UNAUTHORIZED).json({ message: "Something went wrong" });
@@ -36,7 +37,11 @@ const login = async (req: Request, res: Response) => {
 
   const token = JWT.generate({ email: user.email });
 
-  res.cookie('access_token', token).json({ message: "Logged in." });
+  res.cookie('access_token', token, { httpOnly: true }).json({ message: "Logged in." });
 };
 
-export { signup, login };
+const logout = async (req: Request, res: Response) => {
+  res.clearCookie('access_token').json({ message: "Logged out." });
+};
+
+export { signup, login, logout };

@@ -1,12 +1,11 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import API from "../utils/api";
 import { useAuth } from '../providers/AuthProvider';
 
 const Signin = () => {
   const navigate = useNavigate();
-  const { isAuthenticatied, setAuthenticated } = useAuth();
+  const { isAuthenticatied, login } = useAuth();
 
   const [values, setValues] = useState({ email: '', password: '' });
 
@@ -16,12 +15,7 @@ const Signin = () => {
 
   const handleSignIn = (e: FormEvent) => {
     e.preventDefault();
-    API.post('/auth/login', values).then(res => {
-      console.log(res.data);
-      setAuthenticated(true);
-    }).catch(() => {
-      alert('Login failed.');
-    });
+    login!(values.email, values.password);
   }
 
   const handleChange = (e: FormEvent<HTMLInputElement>) => {
@@ -33,12 +27,12 @@ const Signin = () => {
       <div className="text-3xl">Sign In</div>
       <div className="mt-10 w-80">
         <div className="">
-          <div className="">Email:</div>
-          <input name="email" onChange={handleChange} className="w-full px-2 py-1 mt-3 border outline-none border-slate-500" type="email" placeholder="Your email" />
+          <div className="">* Email:</div>
+          <input name="email" onChange={handleChange} className="w-full px-2 py-1 mt-3 border border-green-500 outline-none invalid:border-red-500" type="email" placeholder="Your email" required />
         </div>
         <div className="mt-5">
-          <div className="">Password:</div>
-          <input name="password" onChange={handleChange} className="w-full px-2 py-1 mt-3 border outline-none border-slate-500" type="password" placeholder="Your password" />
+          <div className="">* Password:</div>
+          <input name="password" onChange={handleChange} className="w-full px-2 py-1 mt-3 border border-green-500 outline-none invalid:border-red-500" type="password" placeholder="Your password" required />
         </div>
       </div>
       <div className="flex items-center justify-center mt-10">

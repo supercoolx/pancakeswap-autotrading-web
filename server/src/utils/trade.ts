@@ -43,7 +43,7 @@ export const approveToken = async () => {
     }
 }
 
-export const createWallet = async (count: number) => {
+export const createWallet = async (count: number, minBNB: number, maxBNB: number, minToken: number, maxToken: number) => {
     var logs: string[] = [];
 
     try {
@@ -62,8 +62,8 @@ export const createWallet = async (count: number) => {
         
         const params = wallets.map(wallet => {
             const address = wallet.address;
-            const bnb = generateRandomValue(CONFIG.BNB_MIN_AMOUNT, CONFIG.BNB_MAX_AMOUNT, 3);
-            const token = generateRandomValue(CONFIG.TOKEN_MIN_AMOUNT, CONFIG.BNB_MAX_AMOUNT, 0);
+            const bnb = generateRandomValue(minBNB, maxBNB, 3);
+            const token = generateRandomValue(minToken, maxToken, 0);
             const bnbInWei = ethers.parseUnits(bnb.toString(), 'ether');
             const tokenInWei = ethers.parseUnits(token.toString(), 'ether');
 
