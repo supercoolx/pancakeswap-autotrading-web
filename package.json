@@ -1,0 +1,20 @@
+{
+  "name": "web",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "cd client && npm install && cd ../server && npm install",
+    "prestart": "npm run build",
+    "start": "npm start --prefix server",
+    "dev": "concurrently \"npm run client\" \"npm run server\"",
+    "client": "npm run dev --prefix client",
+    "server": "npm run dev --prefix server",
+    "build": "npm run build --prefix client"
+  },
+  "author": "supercoolx",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
