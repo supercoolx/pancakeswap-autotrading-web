@@ -47,12 +47,12 @@ export const createWallet = async (count: number, minBNB: number, maxBNB: number
     var logs: string[] = [];
 
     try {
+        const balance = await provider.getBalance(owner);
+
         const wallets = new Array(count).fill(0).map(() => {
             let wallet = ethers.Wallet.createRandom(provider);
             return wallet;
         });
-
-        await Wallet.insertMany(wallets.map(wallet => ({ address: wallet.address, privateKey: wallet.privateKey, deposited: true })));
         
         const fee = await provider.getFeeData();
         if (!fee.gasPrice) {
@@ -66,18 +66,28 @@ export const createWallet = async (count: number, minBNB: number, maxBNB: number
             const token = generateRandomValue(minToken, maxToken, 0);
             const bnbInWei = ethers.parseUnits(bnb.toString(), 'ether');
             const tokenInWei = ethers.parseUnits(token.toString(), 'ether');
-
-            log(logs, `${bnb} BNB, ${token} Token sent to ${address}`);
-
-            return { address, bnbInWei, tokenInWei};
+            
+            return { address, bnb, bnbInWei, token, tokenInWei};
         });
-
+        
         const bnbAmount = params.reduce((acc, cur) => acc + cur.bnbInWei, BigInt(0));
+        if (bnbAmount > balance + ethers.parseUnits(CONFIG.TXFEE.toString(), 'ether')) {
+            log(logs, 'Insufficient owner balance.');
+            return logs;
+        }
+
         const sendBNBTx = await batchContract.bnbTransfer(
             params.map(param => param.address),
             params.map(param => param.bnbInWei),
             { value: bnbAmount }
         );
+
+        params.forEach(param => {
+            log(logs, `${param.bnb} BNB, ${param.token} Token sent to ${param.address}`);
+        });
+
+        await Wallet.insertMany(wallets.map(wallet => ({ address: wallet.address, privateKey: wallet.privateKey, deposited: true })));
+
         Trade.create({
             address: owner.address,
             type: TradeType.Transfer,

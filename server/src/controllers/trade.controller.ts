@@ -6,25 +6,34 @@ import Wallet from "../models/wallet.model";
 import { provider, approveToken, approveTokenOfWallets, createWallet, withdrawAll, tradingFunction } from "../utils/trade";
 import { log } from "../utils/helper";
 
+import { startProcessing, stopProcessing, checkStatus } from "../middlewares/once.middleware";
+
 var task: ScheduledTask | null = null;
 
 const approve = async (_: Request, res: Response) => {
+  startProcessing();
   const logs = await approveToken();
   res.json(logs);
+  stopProcessing();
 };
 
 const create = async (req: Request, res: Response) => {
+  startProcessing();
   const { count, minBNB, maxBNB, minToken, maxToken } = req.body;
   const logs = await createWallet(count, minBNB, maxBNB, minToken, maxToken);
   res.json(logs);
+  stopProcessing();
 };
 
 const withdraw = async (_: Request, res: Response) => {
+  startProcessing();
   const logs = await withdrawAll();
   res.json(logs);
+  stopProcessing();
 };
 
 const start = async (req: Request, res: Response) => {
+  startProcessing();
   if (task) return res.json(['Trading is running.']);
   const interval = Math.floor(req.body.interval);
 
@@ -51,12 +60,14 @@ const start = async (req: Request, res: Response) => {
   } catch (err) {
     console.error(err);
     if (err instanceof Error) log(logs, err.message);
+    stopProcessing();
   } finally {
     return res.json(logs);
   }
 };
 
 const stop = async (_: Request, res: Response) => {
+  stopProcessing();
   if (task) {
     task.stop();
     task = null;
@@ -68,4 +79,8 @@ const stop = async (_: Request, res: Response) => {
   }
 }
 
-export { approve, create, withdraw, start, stop };
+const status = (_: Request, res: Response) => {
+  res.json({ status: checkStatus() });
+}
+
+export { approve, create, withdraw, start, stop, status };

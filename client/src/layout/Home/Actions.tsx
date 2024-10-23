@@ -1,8 +1,9 @@
-import { useState, FormEvent } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import API from "../../utils/api";
 
 const Actions = ({ appendLog }: { appendLog: (...logs: string[]) => void }) => {
     const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState(false);
     const [config, setConfig] = useState({
         count: 5,
         minBNB: 0.3,
@@ -37,7 +38,7 @@ const Actions = ({ appendLog }: { appendLog: (...logs: string[]) => void }) => {
             appendLog(err.message);
         }).finally(() => {
             setLoading(false);
-        })
+        });
     }
 
     const handleWithdraw = () => {
@@ -56,6 +57,7 @@ const Actions = ({ appendLog }: { appendLog: (...logs: string[]) => void }) => {
         setLoading(true);
         API.post('/trade/start', { interval: config.interval }).then(res => {
             appendLog(...(res.data as string[]));
+            setStatus(true);
         }).catch(err => {
             console.error(err);
             appendLog(err.message);
@@ -68,6 +70,7 @@ const Actions = ({ appendLog }: { appendLog: (...logs: string[]) => void }) => {
         setLoading(true);
         API.post('/trade/stop').then(res => {
             appendLog(...(res.data as string[]));
+            setStatus(false);
         }).catch(err => {
             console.error(err);
             appendLog(err.message);
@@ -75,6 +78,15 @@ const Actions = ({ appendLog }: { appendLog: (...logs: string[]) => void }) => {
             setLoading(false);
         })
     }
+
+    useEffect(() => {
+        API.post('/trade/status').then(res => {
+            setStatus(res.data.status);
+        }).catch(err => {
+            console.error(err);
+            appendLog(err.message);
+        });
+    }, []);
 
     return (
         <div className="relative flex items-end col-span-2 gap-5 p-2 border border-slate-500">
@@ -123,9 +135,9 @@ const Actions = ({ appendLog }: { appendLog: (...logs: string[]) => void }) => {
                 </div>
             </div>
             <div className="flex flex-col items-start gap-2">
-                <button disabled={loading} onClick={handleCreate} title="Create wallets and send random BNB and Tokens for trading." className="w-40 px-2 py-1 border border-slate-500 disabled:cursor-not-allowed disabled:text-slate-400 disabled:border-slate-300">Create Wallet</button>
-                <button disabled={loading} onClick={handleWithdraw} title="Return all BNB and tokens from created wallets." className="w-40 px-2 py-1 border border-slate-500 disabled:cursor-not-allowed disabled:text-slate-400 disabled:border-slate-300">Withdraw Assets</button>
-                <button disabled={loading} onClick={handleStart} title="Start auto trading. Buy or sell trade will be started at random time every interval on random wallet with random amount of BNB or Token." className="w-40 px-2 py-1 border border-slate-500 disabled:cursor-not-allowed disabled:text-slate-400 disabled:border-slate-300">Start Trade</button>
+                <button disabled={loading || status} onClick={handleCreate} title="Create wallets and send random BNB and Tokens for trading." className="w-40 px-2 py-1 border border-slate-500 disabled:cursor-not-allowed disabled:text-slate-400 disabled:border-slate-300">Create Wallet</button>
+                <button disabled={loading || status} onClick={handleWithdraw} title="Return all BNB and tokens from created wallets." className="w-40 px-2 py-1 border border-slate-500 disabled:cursor-not-allowed disabled:text-slate-400 disabled:border-slate-300">Withdraw Assets</button>
+                <button disabled={loading || status} onClick={handleStart} title="Start auto trading. Buy or sell trade will be started at random time every interval on random wallet with random amount of BNB or Token." className="w-40 px-2 py-1 border border-slate-500 disabled:cursor-not-allowed disabled:text-slate-400 disabled:border-slate-300">Start Trade</button>
                 <button disabled={loading} onClick={handleStop} title="Stop auto trading. You can restart by click start button." className="w-40 px-2 py-1 border border-slate-500 disabled:cursor-not-allowed disabled:text-slate-400 disabled:border-slate-300">Stop Trade</button>
                 <button disabled={true} onClick={handleApprove} title="Approve tokens of owner wallet to batch transfer contract. BNB and tokens are distributed using batch transfer contract. No need if you once done." className="w-40 px-2 py-1 border border-slate-500 disabled:cursor-not-allowed disabled:text-slate-400 disabled:border-slate-300">Approve Tokens</button>
             </div>
