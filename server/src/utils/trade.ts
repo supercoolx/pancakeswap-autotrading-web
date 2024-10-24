@@ -138,31 +138,31 @@ export const withdrawAll = async () => {
             return logs;
         }
 
-        const returnTokenPromises = wallets.map(async (wallet, key) => {
-            const tokenContract = new ethers.Contract(tokenAddress, tokenABI, wallet);
-            const balance = await tokenContract.balanceOf(wallet.address);
+        // const returnTokenPromises = wallets.map(async (wallet, key) => {
+        //     const tokenContract = new ethers.Contract(tokenAddress, tokenABI, wallet);
+        //     const balance = await tokenContract.balanceOf(wallet.address);
 
-            if (balance === BigInt(0)) {
-                ws[key].withdrawn = true;
-                await ws[key].save();
-                log(logs, `No tokens to return in ${wallet.address}`);
-                return logs;
-            }
-            const tx = await tokenContract.transfer(owner.address, balance);
-            await Trade.create({
-                address: wallet.address,
-                type: TradeType.Transfer,
-                tokenAmount: balance.toString(),
-                transactionHash: tx.hash
-            });
-            await Wallet.findOneAndUpdate(
-                { address: wallet.address },
-                { withdrawn: true }
-            );
-            log(logs, `${ethers.formatEther(balance)} token returned from ${wallet.address}`);
-            await tx.wait();
-        });
-        await Promise.all(returnTokenPromises);
+        //     if (balance === BigInt(0)) {
+        //         ws[key].withdrawn = true;
+        //         await ws[key].save();
+        //         log(logs, `No tokens to return in ${wallet.address}`);
+        //         return logs;
+        //     }
+        //     const tx = await tokenContract.transfer(owner.address, balance);
+        //     await Trade.create({
+        //         address: wallet.address,
+        //         type: TradeType.Transfer,
+        //         tokenAmount: balance.toString(),
+        //         transactionHash: tx.hash
+        //     });
+        //     await Wallet.findOneAndUpdate(
+        //         { address: wallet.address },
+        //         { withdrawn: true }
+        //     );
+        //     log(logs, `${ethers.formatEther(balance)} token returned from ${wallet.address}`);
+        //     await tx.wait();
+        // });
+        // await Promise.all(returnTokenPromises);
 
         const returnBNBPromises = wallets.map(async (wallet) => {
             const balance = await provider.getBalance(wallet.address);
@@ -206,7 +206,7 @@ export const startBuyTrade = async (wallet: ethers.Wallet, config: ConfigType) =
 
         const balance = parseFloat(ethers.formatEther(balanceInWei));
         
-        const amountIn = config.bnbLimit <= 0 ? generateRandomValue(0, balance - config.txFee, 3) : generateRandomValue(0, Math.min(balance - config.txFee, config.bnbLimit), 3);
+        const amountIn = config.bnbLimit <= 0 ? generateRandomValue(0, balance - config.txFee, 5) : generateRandomValue(0, Math.min(balance - config.txFee, config.bnbLimit), 5);
 
         if (amountIn === 0) {
             log(logs, 'No BNB to buy.');
