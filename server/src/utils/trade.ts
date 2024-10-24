@@ -205,7 +205,8 @@ export const startBuyTrade = async (wallet: ethers.Wallet, config: ConfigType) =
         if (balanceInWei < txFeeInWei) return log(logs, 'BuyTrade: Insufficient transaction fee.');
 
         const balance = parseFloat(ethers.formatEther(balanceInWei));
-        const amountIn = config.bnbLimit <= 0 ? generateRandomValue(0, balance - config.txFee, 3) : Math.min(config.bnbLimit, generateRandomValue(0, balance - config.txFee, 3));
+        
+        const amountIn = config.bnbLimit <= 0 ? generateRandomValue(0, balance - config.txFee, 3) : generateRandomValue(0, Math.min(balance - config.txFee, config.bnbLimit), 3);
 
         if (amountIn === 0) {
             log(logs, 'No BNB to buy.');
@@ -256,7 +257,7 @@ export const startSellTrade = async (wallet: ethers.Wallet, config: ConfigType) 
         const tokenBalanceInWei = await tokenContract.balanceOf(wallet.address);
         const tokenBalance = parseFloat(ethers.formatEther(tokenBalanceInWei));
 
-        const amountIn = config.tokenLimit <= 0 ? generateRandomValue(0, tokenBalance) : Math.min(config.tokenLimit, generateRandomValue(0, tokenBalance));
+        const amountIn = config.tokenLimit <= 0 ? generateRandomValue(0, tokenBalance) : generateRandomValue(0, Math.min(config.tokenLimit, tokenBalance));
         if (amountIn === 0) {
             log(logs, 'No tokens to sell.');
             return logs;
