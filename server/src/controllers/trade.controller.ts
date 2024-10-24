@@ -3,6 +3,7 @@ import cron, { ScheduledTask } from "node-cron";
 import { Request, Response } from "express";
 
 import Wallet from "../models/wallet.model";
+import Config, { ConfigType } from "../models/config.model";
 import { provider, approveToken, approveTokenOfWallets, createWallet, withdrawAll, tradingFunction } from "../utils/trade";
 import { log } from "../utils/helper";
 
@@ -19,8 +20,9 @@ const approve = async (_: Request, res: Response) => {
 
 const create = async (req: Request, res: Response) => {
   startProcessing();
-  const { count, minBNB, maxBNB, minToken, maxToken } = req.body;
-  const logs = await createWallet(count, minBNB, maxBNB, minToken, maxToken);
+  const config: ConfigType = req.body;
+  await Config.findOneAndUpdate({}, config);
+  const logs = await createWallet(config);
   res.json(logs);
   stopProcessing();
 };
@@ -34,6 +36,9 @@ const withdraw = async (_: Request, res: Response) => {
 
 const start = async (req: Request, res: Response) => {
   startProcessing();
+  const config: ConfigType = req.body;
+  await Config.findOneAndUpdate({}, config);
+
   if (task) return res.json(['Trading is running.']);
   const interval = Math.floor(req.body.interval);
 
@@ -49,10 +54,10 @@ const start = async (req: Request, res: Response) => {
       const approveLogs = await approveTokenOfWallets(wallets);
       logs.push(...approveLogs);
 
-      tradingFunction(wallets);
-      task = cron.schedule(`*/${interval} * * * *`, () => {
-        const randomDelay = Math.floor(Math.random() * interval * 60000);
-        setTimeout(() => tradingFunction(wallets), randomDelay);
+      tradingFunction(wallets, config);
+      task = cron.schedule(`*/${config.intervalMax} * * * *`, () => {
+        const randomDelay = (Math.random() * (config.intervalMax - config.intervalMin) + config.intervalMin) * 60000;
+        setTimeout(() => tradingFunction(wallets, config), randomDelay);
       });
 
       log(logs, 'Trading started.');

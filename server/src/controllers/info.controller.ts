@@ -4,6 +4,7 @@ import { StatusCodes } from "http-status-codes";
 
 import Trade from "../models/trade.model";
 import Wallet from "../models/wallet.model";
+import Config from "../models/config.model";
 import { provider } from "../utils/trade";
 
 const index = async (_: Request, res: Response) => {
@@ -24,6 +25,17 @@ const index = async (_: Request, res: Response) => {
   });
 };
 
+const config = async (_: Request, res: Response) => {
+  const config = await Config.findOne();
+  if (!config) {
+    const newConfig = new Config();
+    await newConfig.save();
+    res.json(newConfig.toJSON());
+  } else {
+    res.json(config.toJSON());
+  }
+}
+
 const wallets = async (_: Request, res: Response) => {
   const wallets = await Wallet.find({ deposited: true, withdrawn: false });
   res.json(wallets.map(wallet => wallet.address));
@@ -34,4 +46,4 @@ const trades = async (_: Request, res: Response) => {
   res.json(trades.map(trade => trade.toJSON()));
 };
 
-export { index, wallets, trades };
+export { index, wallets, trades, config };

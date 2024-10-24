@@ -10,6 +10,6 @@ router.post("/create", onlyOnce, create);
 router.post("/withdraw", onlyOnce, withdraw);
 router.post("/start", onlyOnce, start);
 router.post("/stop", stop);
-router.post("/status", status);
+router.get("/status", status);
 
 export default router;

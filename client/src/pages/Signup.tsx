@@ -1,7 +1,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useAuth } from '../providers/AuthProvider';
+import { useAuth } from "../providers/contexts";
 
 const Signup = () => {
   const navigate = useNavigate();

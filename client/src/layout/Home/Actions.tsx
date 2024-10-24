@@ -4,14 +4,7 @@ import API from "../../utils/api";
 const Actions = ({ appendLog, fetchWallets }: { appendLog: (...logs: string[]) => void, fetchWallets: () => void }) => {
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState(false);
-    const [config, setConfig] = useState({
-        count: 5,
-        minBNB: 0.3,
-        maxBNB: 0.5,
-        minToken: 5000,
-        maxToken: 10000,
-        interval: 2,
-    });
+    const [config, setConfig] = useState<Config>({});
 
     const handleChange = (e: FormEvent<HTMLInputElement>) => {
         setConfig({ ...config, [e.currentTarget.name]: parseFloat(e.currentTarget.value) });
@@ -57,7 +50,7 @@ const Actions = ({ appendLog, fetchWallets }: { appendLog: (...logs: string[]) =
 
     const handleStart = () => {
         setLoading(true);
-        API.post('/trade/start', { interval: config.interval }).then(res => {
+        API.post('/trade/start', config).then(res => {
             appendLog(...(res.data as string[]));
             setStatus(true);
         }).catch(err => {
@@ -78,20 +71,23 @@ const Actions = ({ appendLog, fetchWallets }: { appendLog: (...logs: string[]) =
             appendLog(err.message);
         }).finally(() => {
             setLoading(false);
-        })
+        });
     }
 
     useEffect(() => {
-        API.post('/trade/status').then(res => {
+        API.get('/trade/status').then(res => {
             setStatus(res.data.status);
         }).catch(err => {
             console.error(err);
             appendLog(err.message);
         });
-    }, []);
+        API.get('/info/config').then(res => {
+            setConfig(res.data);
+        });
+    }, [setConfig, appendLog]);
 
     return (
-        <div className="relative flex items-end col-span-2 gap-5 p-2 border border-slate-500">
+        <div className="relative flex items-center col-span-2 gap-5 p-2 border border-slate-500">
             { loading && <div className="absolute inset-0 flex items-center justify-center text-3xl backdrop-blur-sm">Please wait...</div> }
             <div className="w-full">
                 <div className="font-bold text-center">Configuration</div>
@@ -100,37 +96,55 @@ const Actions = ({ appendLog, fetchWallets }: { appendLog: (...logs: string[]) =
                         <div className="flex gap-2" title="The count of wallet you are going to create.">
                             <div>Wallet count create:</div>
                             <div className="flex-1">
-                                <input name="count" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" value={config.count} min={1} />
+                                <input name="walletCount" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" defaultValue={config.walletCount} min={1} />
                             </div>
                         </div>
                         <div className="flex gap-2" title="The minimum BNB amount that you are going to send to created wallet for trading.">
                             <div>Min BNB amount to send per wallet:</div>
                             <div className="flex-1">
-                                <input name="minBNB" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" value={config.minBNB} />
+                                <input name="minBNB" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" defaultValue={config.minBNB} />
                             </div>
                         </div>
                         <div className="flex gap-2" title="The maximum BNB amount that you are going to send to created wallet for trading.">
                             <div>Max BNB amount to send per wallet:</div>
                             <div className="flex-1">
-                                <input name="maxBNB" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" value={config.maxBNB} />
+                                <input name="maxBNB" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" defaultValue={config.maxBNB} />
                             </div>
                         </div>
                         <div className="flex gap-2" title="The minimum Token amount that you are going to send to created wallet for trading.">
                             <div>Min Token amount to send per wallet:</div>
                             <div className="flex-1">
-                                <input name="minToken" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" value={config.minToken} min={1} />
+                                <input name="minToken" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" defaultValue={config.minToken} min={1} />
                             </div>
                         </div>
                         <div className="flex gap-2" title="The maximum BNB amount that you are going to send to created wallet for trading.">
                             <div>Max Token amount to send per wallet:</div>
                             <div className="flex-1">
-                                <input name="maxToken" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" value={config.maxToken} min={1} />
+                                <input name="maxToken" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" defaultValue={config.maxToken} min={1} />
                             </div>
                         </div>
                         <div className="flex gap-2" title="Trade will be done at random moment every this minutes.">
-                            <div>Trading interval in minutes:</div>
+                            <div>Min trading interval in minutes:</div>
                             <div className="flex-1">
-                                <input name="interval" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" value={config.interval} min={1} />
+                                <input name="intervalMin" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" defaultValue={config.intervalMin} min={1} />
+                            </div>
+                        </div>
+                        <div className="flex gap-2" title="Trade will be done at random moment every this minutes.">
+                            <div>Max trading interval in minutes:</div>
+                            <div className="flex-1">
+                                <input name="intervalMax" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" defaultValue={config.intervalMax} min={1} />
+                            </div>
+                        </div>
+                        <div className="flex gap-2" title="Trade will be done at random moment every this minutes.">
+                            <div>Max trading BNB amount:</div>
+                            <div className="flex-1">
+                                <input name="bnbLimit" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" defaultValue={config.bnbLimit} />
+                            </div>
+                        </div>
+                        <div className="flex gap-2" title="Trade will be done at random moment every this minutes.">
+                            <div>Max trading token amount:</div>
+                            <div className="flex-1">
+                                <input name="tokenLimit" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" defaultValue={config.tokenLimit} />
                             </div>
                         </div>
                     </div>

@@ -8,7 +8,8 @@ import routerABI from "../abi/router.json";
 import tokenABI from "../abi/token.json";
 import batchABI from "../abi/batch.json";
 
-import CONFIG from "../config/config";
+import { ConfigType } from "../models/config.model";
+
 import { TradeType, NETWORK } from "./constants";
 import { generateRandomValue, log } from "./helper";
 
@@ -43,35 +44,35 @@ export const approveToken = async () => {
     }
 }
 
-export const createWallet = async (count: number, minBNB: number, maxBNB: number, minToken: number, maxToken: number) => {
+export const createWallet = async (config: ConfigType) => {
     var logs: string[] = [];
 
     try {
         const balance = await provider.getBalance(owner);
 
-        const wallets = new Array(count).fill(0).map(() => {
+        const wallets = new Array(config.walletCount).fill(0).map(() => {
             let wallet = ethers.Wallet.createRandom(provider);
             return wallet;
         });
-        
+
         const fee = await provider.getFeeData();
         if (!fee.gasPrice) {
             log(logs, 'Cannot estimate gas price!.');
             return logs;
         }
-        
+
         const params = wallets.map(wallet => {
             const address = wallet.address;
-            const bnb = generateRandomValue(minBNB, maxBNB, 3);
-            const token = generateRandomValue(minToken, maxToken, 0);
+            const bnb = generateRandomValue(config.minBNB, config.maxBNB, 3);
+            const token = generateRandomValue(config.minToken, config.maxToken, 0);
             const bnbInWei = ethers.parseUnits(bnb.toString(), 'ether');
             const tokenInWei = ethers.parseUnits(token.toString(), 'ether');
-            
-            return { address, bnb, bnbInWei, token, tokenInWei};
+
+            return { address, bnb, bnbInWei, token, tokenInWei };
         });
-        
+
         const bnbAmount = params.reduce((acc, cur) => acc + cur.bnbInWei, BigInt(0));
-        if (bnbAmount > balance + ethers.parseUnits(CONFIG.TXFEE.toString(), 'ether')) {
+        if (bnbAmount > balance + ethers.parseUnits(config.txFee.toString(), 'ether')) {
             log(logs, 'Insufficient owner balance.');
             return logs;
         }
@@ -130,13 +131,13 @@ export const withdrawAll = async () => {
         }
 
         const wallets = ws.map(w => new ethers.Wallet(w.privateKey, provider));
-        
+
         const fee = await provider.getFeeData();
         if (!fee.gasPrice) {
             log(logs, 'Cannot estimate gas price!.');
             return logs;
         }
-        
+
         const returnTokenPromises = wallets.map(async (wallet, key) => {
             const tokenContract = new ethers.Contract(tokenAddress, tokenABI, wallet);
             const balance = await tokenContract.balanceOf(wallet.address);
@@ -196,15 +197,20 @@ export const withdrawAll = async () => {
     }
 }
 
-export const startBuyTrade = async (wallet: ethers.Wallet) => {
+export const startBuyTrade = async (wallet: ethers.Wallet, config: ConfigType) => {
     const logs: string[] = [];
     try {
         const balanceInWei = await provider.getBalance(wallet.address);
-        const txFeeInWei = ethers.parseUnits(CONFIG.TXFEE.toString(), 'ether');
+        const txFeeInWei = ethers.parseUnits(config.txFee.toString(), 'ether');
         if (balanceInWei < txFeeInWei) return log(logs, 'Insufficient transaction fee.');
-        
+
         const balance = parseFloat(ethers.formatEther(balanceInWei));
-        const amountIn = generateRandomValue(0, balance - CONFIG.TXFEE, 3);
+        const amountIn = config.bnbLimit <= 0 ? generateRandomValue(0, balance - config.txFee, 3) : Math.min(config.bnbLimit, generateRandomValue(0, balance - config.txFee, 3));
+
+        if (amountIn === 0) {
+            log(logs, 'No BNB to buy.');
+            return logs;
+        }
 
         const amountInWei = ethers.parseUnits(amountIn.toString(), 'ether');
 
@@ -226,7 +232,7 @@ export const startBuyTrade = async (wallet: ethers.Wallet) => {
             type: TradeType.Buy,
             bnbAmount: amountInWei.toString(),
             transactionHash: tx.hash
-        });            
+        });
         await tx.wait();
     } catch (err) {
         console.error(err);
@@ -236,33 +242,33 @@ export const startBuyTrade = async (wallet: ethers.Wallet) => {
     }
 }
 
-export const startSellTrade = async (wallet: ethers.Wallet) => {
+export const startSellTrade = async (wallet: ethers.Wallet, config: ConfigType) => {
     const logs: string[] = [];
     try {
         const balance = await provider.getBalance(wallet.address);
-        const txFeeInWei = ethers.parseUnits(CONFIG.TXFEE.toString(), 'ether');
-        if (balance < txFeeInWei)  {
+        const txFeeInWei = ethers.parseUnits(config.txFee.toString(), 'ether');
+        if (balance < txFeeInWei) {
             log(logs, 'Insufficient transaction fee.');
             return logs;
         }
-        
+
         const tokenContract = new ethers.Contract(tokenAddress, tokenABI, wallet);
         const tokenBalanceInWei = await tokenContract.balanceOf(wallet.address);
         const tokenBalance = parseFloat(ethers.formatEther(tokenBalanceInWei));
 
-        const amountIn = generateRandomValue(0, tokenBalance);
-        if (amountIn === 0)  {
+        const amountIn = config.tokenLimit <= 0 ? generateRandomValue(0, tokenBalance) : Math.min(config.tokenLimit, generateRandomValue(0, tokenBalance));
+        if (amountIn === 0) {
             log(logs, 'No tokens to sell.');
             return logs;
         }
         const amountInWei = ethers.parseUnits(amountIn.toString(), 'ether');
 
         const fee = await provider.getFeeData();
-        if (!fee.gasPrice)  {
+        if (!fee.gasPrice) {
             log(logs, 'Cannot estimate gas price!.');
             return logs;
         }
-        
+
         // Swap token to BNB
         const routerContract = new ethers.Contract(routerAddress, routerABI, wallet);
         const amountOut = await routerContract.getAmountsOut(amountInWei, [tokenAddress, wbnbAddress]);
@@ -309,8 +315,8 @@ export const approveTokenOfWallets = async (wallets: ethers.Wallet[]) => {
     }
 }
 
-export const tradingFunction = async (wallets: ethers.Wallet[]) => {
+export const tradingFunction = async (wallets: ethers.Wallet[], config: ConfigType) => {
     const wallet = wallets[Math.floor(Math.random() * wallets.length)];
-    if (Math.random() > 0.5) return startBuyTrade(wallet);
-    else return startSellTrade(wallet);
+    if (Math.random() > 0.5) return startBuyTrade(wallet, config);
+    else return startSellTrade(wallet, config);
 }

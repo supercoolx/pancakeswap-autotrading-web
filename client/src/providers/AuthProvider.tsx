@@ -1,20 +1,13 @@
-import { createContext, useContext, useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
+
+import AuthContext from "./contexts";
 import API from "../utils/api";
-
-interface AuthContextType {
-    isAuthenticatied?: boolean
-    login?: (email: string, password: string) => void
-    signup?: (username: string, email: string, password: string) => void
-    logout?: () => void
-}
-
-const AuthContext = createContext<AuthContextType>({});
 
 const AuthProvider = ({ children }: { children: JSX.Element }) => {
 
     const [isAuthenticatied, setAuthenticated] = useState(false);
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         API.get('/user/me').then(() => {
             setAuthenticated(true);
         }).catch(console.error);
@@ -50,5 +43,4 @@ const AuthProvider = ({ children }: { children: JSX.Element }) => {
     )
 }
 
-export const useAuth = () => useContext(AuthContext);
 export default AuthProvider;
