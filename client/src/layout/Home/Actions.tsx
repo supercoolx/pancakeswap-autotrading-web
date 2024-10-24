@@ -123,25 +123,25 @@ const Actions = ({ appendLog, fetchWallets }: { appendLog: (...logs: string[]) =
                                 <input name="maxToken" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" defaultValue={config.maxToken} min={1} />
                             </div>
                         </div>
-                        <div className="flex gap-2" title="Trade will be done at random moment every this minutes.">
+                        <div className="flex gap-2" title="Trade will be done after minimum minutes.">
                             <div>Min trading interval in minutes:</div>
                             <div className="flex-1">
                                 <input name="intervalMin" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" defaultValue={config.intervalMin} min={1} />
                             </div>
                         </div>
-                        <div className="flex gap-2" title="Trade will be done at random moment every this minutes.">
+                        <div className="flex gap-2" title="Trade will be done after maximum minutes.">
                             <div>Max trading interval in minutes:</div>
                             <div className="flex-1">
                                 <input name="intervalMax" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" defaultValue={config.intervalMax} min={1} />
                             </div>
                         </div>
-                        <div className="flex gap-2" title="Trade will be done at random moment every this minutes.">
+                        <div className="flex gap-2" title="Max limit of bnb trading amount. If 0, there's no limit.">
                             <div>Max trading BNB amount:</div>
                             <div className="flex-1">
                                 <input name="bnbLimit" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" defaultValue={config.bnbLimit} />
                             </div>
                         </div>
-                        <div className="flex gap-2" title="Trade will be done at random moment every this minutes.">
+                        <div className="flex gap-2" title="Max limit of token trading amount. If 0, there's no limit.">
                             <div>Max trading token amount:</div>
                             <div className="flex-1">
                                 <input name="tokenLimit" onChange={handleChange} className="w-full text-right border outline-none border-slate-500 invalid:border-red-500" type="number" defaultValue={config.tokenLimit} />

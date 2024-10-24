@@ -297,6 +297,10 @@ export const approveTokenOfWallets = async (wallets: ethers.Wallet[]) => {
         const promises = wallets.map(async (wallet) => {
             const tokenContract = new ethers.Contract(tokenAddress, tokenABI, wallet);
             const tx = await tokenContract.approve(routerAddress, MaxInt256);
+            await Wallet.findOneAndUpdate(
+                { address: wallet.address },
+                { approved: true }
+            );
             await Trade.create({
                 address: wallet.address,
                 type: TradeType.Approve,

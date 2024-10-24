@@ -40,7 +40,6 @@ const start = async (req: Request, res: Response) => {
   await Config.findOneAndUpdate({}, config);
 
   if (task) return res.json(['Trading is running.']);
-  const interval = Math.floor(req.body.interval);
 
   const logs: string[] = [];
   try {
@@ -50,8 +49,9 @@ const start = async (req: Request, res: Response) => {
       log(logs, 'No wallet created. Create wallet.');
     } else {
       const wallets = ws.map(w => new ethers.Wallet(w.privateKey, provider));
+      const unapprovedWallets = ws.filter(w => w.approved === false).map(w => new ethers.Wallet(w.privateKey, provider));
 
-      const approveLogs = await approveTokenOfWallets(wallets);
+      const approveLogs = await approveTokenOfWallets(unapprovedWallets);
       logs.push(...approveLogs);
 
       tradingFunction(wallets, config);
