@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 // Define the Follow schema
 const ConfigSchema = new mongoose.Schema({
     walletCount: { type: Number, default: 5 },
-    txFee: { type: Number, default: 0.02 },
+    txFee: { type: Number, default: 0.002 },
     minBNB: { type: Number, default: 0.3 },
     maxBNB: { type: Number, default: 0.5 },
     minToken: { type: Number, default: 5000 },

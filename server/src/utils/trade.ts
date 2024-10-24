@@ -202,7 +202,7 @@ export const startBuyTrade = async (wallet: ethers.Wallet, config: ConfigType) =
     try {
         const balanceInWei = await provider.getBalance(wallet.address);
         const txFeeInWei = ethers.parseUnits(config.txFee.toString(), 'ether');
-        if (balanceInWei < txFeeInWei) return log(logs, 'Insufficient transaction fee.');
+        if (balanceInWei < txFeeInWei) return log(logs, 'BuyTrade: Insufficient transaction fee.');
 
         const balance = parseFloat(ethers.formatEther(balanceInWei));
         const amountIn = config.bnbLimit <= 0 ? generateRandomValue(0, balance - config.txFee, 3) : Math.min(config.bnbLimit, generateRandomValue(0, balance - config.txFee, 3));
@@ -248,7 +248,7 @@ export const startSellTrade = async (wallet: ethers.Wallet, config: ConfigType) 
         const balance = await provider.getBalance(wallet.address);
         const txFeeInWei = ethers.parseUnits(config.txFee.toString(), 'ether');
         if (balance < txFeeInWei) {
-            log(logs, 'Insufficient transaction fee.');
+            log(logs, 'SellTrade: Insufficient transaction fee.');
             return logs;
         }
 
