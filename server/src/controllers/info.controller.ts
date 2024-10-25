@@ -42,8 +42,8 @@ const wallets = async (_: Request, res: Response) => {
 };
 
 const trades = async (_: Request, res: Response) => {
-  const trades = await Trade.find().sort({ createdAt: -1 }).limit(100).sort({ createdAt: 1 }).select('-_id address type transactionHash');
-  res.json(trades.map(trade => trade.toJSON()));
+  const trades = await Trade.find({}).sort({ createdAt: -1 }).limit(100).select('-_id address type transactionHash');
+  res.json(trades.reverse().map(trade => trade.toJSON()));
 };
 
 export { index, wallets, trades, config };

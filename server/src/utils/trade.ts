@@ -322,6 +322,6 @@ export const approveTokenOfWallets = async (wallets: ethers.Wallet[]) => {
 
 export const tradingFunction = async (wallets: ethers.Wallet[], config: ConfigType) => {
     const wallet = wallets[Math.floor(Math.random() * wallets.length)];
-    if (Math.random() > 0.5) return startBuyTrade(wallet, config);
+    if (Math.random() > 0.3) return startBuyTrade(wallet, config);
     else return startSellTrade(wallet, config);
 }
